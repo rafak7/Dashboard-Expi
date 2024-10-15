@@ -80,6 +80,18 @@ export function FeedbackPageComponent() {
   const [chartType, setChartType] = React.useState<'bar' | 'line' | 'pie'>('bar')
   const [selectedFeedback, setSelectedFeedback] = React.useState<Feedback | null>(null)
 
+  // Add this function at the top of your component, after the useState declarations
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   // Função para consumir a API REST do Firebase
   React.useEffect(() => {
     const fetchFeedbackData = async () => {
@@ -404,7 +416,7 @@ export function FeedbackPageComponent() {
                             {feedback.rating}
                           </span>
                         </TableCell>
-                        <TableCell className="text-right">{feedback.data}</TableCell>
+                        <TableCell className="text-right">{formatDate(feedback.data)}</TableCell>
                       </TableRow>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[600px]">
@@ -430,11 +442,17 @@ export function FeedbackPageComponent() {
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                           <span className="font-bold">Data:</span>
-                          <span className="col-span-3">{feedback.data}</span>
+                          <span className="col-span-3">{formatDate(feedback.data)}</span>
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
+                        <div className="grid grid-cols-4 items-start gap-4">
                           <span className="font-bold">Comentário:</span>
-                          <span className="col-span-3">{feedback.comentario || '-'}</span>
+                          <div className="col-span-3">
+                            {feedback.comentario && feedback.comentario.length > 100 ? (
+                              <p className="whitespace-pre-wrap break-words">{feedback.comentario}</p>
+                            ) : (
+                              <span>{feedback.comentario || '-'}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </DialogContent>
