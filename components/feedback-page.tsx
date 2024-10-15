@@ -47,6 +47,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { getDatabase, ref, onValue, off } from "firebase/database";
+import { initializeApp } from "firebase/app";
 
 ChartJS.register(
   CategoryScale, 
@@ -60,8 +62,15 @@ ChartJS.register(
   Legend
 )
 
-// URL correta da API do Firebase
-const firebaseURL = "https://expi-e7219-default-rtdb.firebaseio.com/feedback.json"
+// Firebase configuration
+const firebaseConfig = {
+  // Add your Firebase configuration here
+  databaseURL: "https://expi-e7219-default-rtdb.firebaseio.com",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
 type Feedback = {
   id: string
@@ -91,30 +100,31 @@ export function FeedbackPageComponent() {
     });
   };
 
-  // Função para consumir a API REST do Firebase
+  // Realtime data fetching
   React.useEffect(() => {
-    const fetchFeedbackData = async () => {
-      try {
-        const response = await fetch(firebaseURL) // Fazendo o fetch da API REST
-        const data = await response.json()
-
-        if (data) {
-          const feedbackArray: Feedback[] = Object.keys(data).map(key => ({
-            id: key,
-            usuario: data[key].usuario,
-            rating: data[key].rating,
-            data: data[key].data,
-            comentario: data[key].comentario || '-' // Comentário opcional
-          }))
-          setFeedbackData(feedbackArray)
-        }
-      } catch (error) {
-        console.error('Erro ao buscar dados do Firebase:', error)
+    const feedbackRef = ref(database, 'feedback');
+    
+    const handleData = (snapshot: any) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const feedbackArray: Feedback[] = Object.keys(data).map(key => ({
+          id: key,
+          usuario: data[key].usuario,
+          rating: data[key].rating,
+          data: data[key].data,
+          comentario: data[key].comentario || '-'
+        }));
+        setFeedbackData(feedbackArray);
       }
-    }
+    };
 
-    fetchFeedbackData()
-  }, [])
+    onValue(feedbackRef, handleData);
+
+    // Cleanup function
+    return () => {
+      off(feedbackRef, 'value', handleData);
+    };
+  }, []);
 
   React.useEffect(() => {
     setCurrentPage(1) // Reset para a primeira página quando itemsPerPage mudar
