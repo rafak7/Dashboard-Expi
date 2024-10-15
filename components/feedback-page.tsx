@@ -78,7 +78,6 @@ export function FeedbackPageComponent() {
   const [sortColumn, setSortColumn] = React.useState<keyof Feedback>('data')
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc')
   const [chartType, setChartType] = React.useState<'bar' | 'line' | 'pie'>('bar')
-  const [selectedFeedback, setSelectedFeedback] = React.useState<Feedback | null>(null)
 
   // Add this function at the top of your component, after the useState declarations
   const formatDate = (dateString: string) => {
@@ -117,22 +116,32 @@ export function FeedbackPageComponent() {
     fetchFeedbackData()
   }, [])
 
+  // Update this useEffect to depend on itemsPerPage
+  React.useEffect(() => {
+    setCurrentPage(1) // Reset to first page when itemsPerPage changes
+  }, [itemsPerPage])
+
   // Ordenação dos dados
   const sortedData = React.useMemo(() => {
     return [...feedbackData].sort((a, b) => {
-      if (a[sortColumn] < b[sortColumn]) return sortDirection === 'asc' ? -1 : 1
-      if (a[sortColumn] > b[sortColumn]) return sortDirection === 'asc' ? 1 : -1
-      return 0
+      const aValue = a[sortColumn] ?? '';
+      const bValue = b[sortColumn] ?? '';
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
     })
   }, [feedbackData, sortColumn, sortDirection])
 
-  // Paginação dos dados
-  const paginatedData = sortedData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
+  // Update paginatedData calculation
+  const paginatedData = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return sortedData.slice(startIndex, startIndex + itemsPerPage)
+  }, [sortedData, currentPage, itemsPerPage])
 
-  const totalPages = Math.ceil(feedbackData.length / itemsPerPage)
+  // Update totalPages calculation
+  const totalPages = React.useMemo(() => {
+    return Math.ceil(sortedData.length / itemsPerPage)
+  }, [sortedData, itemsPerPage])
 
   const handleSort = (column: keyof Feedback) => {
     if (column === sortColumn) {
@@ -180,7 +189,6 @@ export function FeedbackPageComponent() {
         type: 'category' as const,
       },
       y: {
-        type: 'linear' as const,
         beginAtZero: true,
       },
     },
@@ -193,11 +201,11 @@ export function FeedbackPageComponent() {
         text: 'Distribuição de Feedbacks',
         font: {
           size: 16,
-          weight: 'bold'
+          weight: 'bold' as const, // Specify 'bold' as a const
         },
       },
     },
-  }
+  } as const; // Add 'as const' to the entire object
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -407,7 +415,7 @@ export function FeedbackPageComponent() {
                 {paginatedData.map((feedback) => (
                   <Dialog key={feedback.id}>
                     <DialogTrigger asChild>
-                      <TableRow className="cursor-pointer hover:bg-gray-100" onClick={() => setSelectedFeedback(feedback)}>
+                      <TableRow className="cursor-pointer hover:bg-gray-100">
                         <TableCell className="font-medium">{feedback.id}</TableCell>
                         <TableCell>{feedback.usuario}</TableCell>
                         <TableCell>{feedback.comentario || '-'}</TableCell>
@@ -447,7 +455,7 @@ export function FeedbackPageComponent() {
                         <div className="grid grid-cols-4 items-start gap-4">
                           <span className="font-bold">Comentário:</span>
                           <div className="col-span-3">
-                            {feedback.comentario && feedback.comentario.length > 100 ? (
+                            {feedback.comentario && feedback.comentario.length > 100 ? (  
                               <p className="whitespace-pre-wrap break-words">{feedback.comentario}</p>
                             ) : (
                               <span>{feedback.comentario || '-'}</span>
