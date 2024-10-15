@@ -1,5 +1,5 @@
-import { FeedbackPageComponent } from "@/components/feedback-page"
+  import { DashboardHomeComponent } from "@/components/dashboard-home"
 
-export default function Page() {
-  return <FeedbackPageComponent />
-}
+  export default function Page() {
+    return <DashboardHomeComponent />
+  }

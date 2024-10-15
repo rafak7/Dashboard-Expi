@@ -79,7 +79,7 @@ export function FeedbackPageComponent() {
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc')
   const [chartType, setChartType] = React.useState<'bar' | 'line' | 'pie'>('bar')
 
-  // Add this function at the top of your component, after the useState declarations
+  // Função para formatar data e hora
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR', {
@@ -101,9 +101,9 @@ export function FeedbackPageComponent() {
         if (data) {
           const feedbackArray: Feedback[] = Object.keys(data).map(key => ({
             id: key,
-            usuario: data[key].usuario, // Atualizamos para garantir que a chave corresponde ao JSON
-            rating: data[key].rating,   // Atualizamos para garantir que a chave corresponde ao JSON
-            data: data[key].data,       // Atualizamos para garantir que a chave corresponde ao JSON
+            usuario: data[key].usuario,
+            rating: data[key].rating,
+            data: data[key].data,
             comentario: data[key].comentario || '-' // Comentário opcional
           }))
           setFeedbackData(feedbackArray)
@@ -116,9 +116,8 @@ export function FeedbackPageComponent() {
     fetchFeedbackData()
   }, [])
 
-  // Update this useEffect to depend on itemsPerPage
   React.useEffect(() => {
-    setCurrentPage(1) // Reset to first page when itemsPerPage changes
+    setCurrentPage(1) // Reset para a primeira página quando itemsPerPage mudar
   }, [itemsPerPage])
 
   // Ordenação dos dados
@@ -132,13 +131,12 @@ export function FeedbackPageComponent() {
     })
   }, [feedbackData, sortColumn, sortDirection])
 
-  // Update paginatedData calculation
+  // Paginação
   const paginatedData = React.useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage
     return sortedData.slice(startIndex, startIndex + itemsPerPage)
   }, [sortedData, currentPage, itemsPerPage])
 
-  // Update totalPages calculation
   const totalPages = React.useMemo(() => {
     return Math.ceil(sortedData.length / itemsPerPage)
   }, [sortedData, itemsPerPage])
@@ -201,11 +199,11 @@ export function FeedbackPageComponent() {
         text: 'Distribuição de Feedbacks',
         font: {
           size: 16,
-          weight: 'bold' as const, // Specify 'bold' as a const
+          weight: 'bold' as const,
         },
       },
     },
-  } as const; // Add 'as const' to the entire object
+  } as const;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -216,20 +214,6 @@ export function FeedbackPageComponent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Feedbacks</CardTitle>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                className="h-4 w-4 text-muted-foreground"
-              >
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{feedbackData.length}</div>
@@ -241,18 +225,6 @@ export function FeedbackPageComponent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                className="h-4 w-4 text-muted-foreground"
-              >
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-              </svg>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">4.2</div>
@@ -264,18 +236,6 @@ export function FeedbackPageComponent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Feedbacks Positivos</CardTitle>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                className="h-4 w-4 text-muted-foreground"
-              >
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-              </svg>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
