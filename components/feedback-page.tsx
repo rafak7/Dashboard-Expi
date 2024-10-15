@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react'
+import React, { useState } from 'react'
 import { 
   Table, 
   TableBody,  
@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/dialog"
 import { getDatabase, ref, onValue, off } from "firebase/database";
 import { initializeApp } from "firebase/app";
+import { DataSnapshot } from 'firebase/database';
 
 ChartJS.register(
   CategoryScale, 
@@ -86,7 +87,23 @@ export function FeedbackPageComponent() {
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
   const [sortColumn, setSortColumn] = React.useState<keyof Feedback>('data')
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc')
-  const [chartType, setChartType] = React.useState<'bar' | 'line' | 'pie'>('bar')
+  const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar')
+  const [isChartVisible, setIsChartVisible] = useState(true)
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right')
+
+  // Function to handle chart type change with animation
+  const handleChartTypeChange = (newType: 'bar' | 'line' | 'pie') => {
+    const currentTypeIndex = ['bar', 'line', 'pie'].indexOf(chartType)
+    const newTypeIndex = ['bar', 'line', 'pie'].indexOf(newType)
+    const newDirection = newTypeIndex > currentTypeIndex ? 'left' : 'right'
+    
+    setSlideDirection(newDirection)
+    setIsChartVisible(false)
+    setTimeout(() => {
+      setChartType(newType)
+      setIsChartVisible(true)
+    }, 300) // This should match the transition duration in CSS
+  }
 
   // Função para formatar data e hora
   const formatDate = (dateString: string) => {
@@ -104,7 +121,7 @@ export function FeedbackPageComponent() {
   React.useEffect(() => {
     const feedbackRef = ref(database, 'feedback');
     
-    const handleData = (snapshot: any) => {
+    const handleData = (snapshot: DataSnapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
         const feedbackArray: Feedback[] = Object.keys(data).map(key => ({
@@ -265,7 +282,7 @@ export function FeedbackPageComponent() {
               <Button
                 variant={chartType === 'bar' ? 'default' : 'outline'}
                 size="icon"
-                onClick={() => setChartType('bar')}
+                onClick={() => handleChartTypeChange('bar')}
               >
                 <BarChart className="h-4 w-4" />
                 <span className="sr-only">Gráfico de Barras</span>
@@ -273,7 +290,7 @@ export function FeedbackPageComponent() {
               <Button
                 variant={chartType === 'line' ? 'default' : 'outline'}
                 size="icon"
-                onClick={() => setChartType('line')}
+                onClick={() => handleChartTypeChange('line')}
               >
                 <LineChart className="h-4 w-4" />
                 <span className="sr-only">Gráfico de Linha</span>
@@ -281,15 +298,22 @@ export function FeedbackPageComponent() {
               <Button
                 variant={chartType === 'pie' ? 'default' : 'outline'}
                 size="icon"
-                onClick={() => setChartType('pie')}
+                onClick={() => handleChartTypeChange('pie')}
               >
                 <PieChart className="h-4 w-4" />
                 <span className="sr-only">Gráfico de Pizza</span>
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="flex justify-center items-center">
-            <div className={`w-full max-w-2xl h-[300px] ${chartType === 'pie' ? 'flex justify-center items-center' : ''}`}>
+          <CardContent className="flex justify-center items-center overflow-hidden">
+            <div 
+              className={`w-full max-w-2xl h-[300px] ${chartType === 'pie' ? 'flex justify-center items-center' : ''} 
+                transition-all duration-300 ease-in-out 
+                ${isChartVisible 
+                  ? 'opacity-100 transform translate-x-0' 
+                  : `opacity-0 transform ${slideDirection === 'left' ? '-translate-x-full' : 'translate-x-full'}`
+                }`}
+            >
               {chartType === 'bar' && <Bar data={chartData} options={chartOptions} />}
               {chartType === 'line' && <Line data={chartData} options={chartOptions} />}
               {chartType === 'pie' && (
