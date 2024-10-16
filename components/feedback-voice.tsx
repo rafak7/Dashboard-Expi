@@ -469,45 +469,43 @@ export function FeedbackVoice() {
                         <TableCell className="text-right">{formatDate(feedback.data)}</TableCell>
                       </TableRow>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px]">
+                    <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col">
                       <DialogHeader>
                         <DialogTitle>Detalhes do Feedback</DialogTitle>
                       </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">ID:</span>
-                          <span className="col-span-3">{feedback.id}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">Usuário:</span>
-                          <span className="col-span-3">{feedback.usuario}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">Rating:</span>
-                          <span className="col-span-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
-                              {feedback.rating}
-                            </span>
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">Data:</span>
-                          <span className="col-span-3">{formatDate(feedback.data)}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-start gap-4">
-                          <span className="font-bold">Comentário:</span>
-                          <div className="col-span-3">
-                            {feedback.comentario && feedback.comentario.length > 100 ? (  
-                              <p className="whitespace-pre-wrap break-words">{feedback.comentario}</p>
-                            ) : (
-                              <span>{feedback.comentario || '-'}</span>
-                            )}
+                      <div className="flex-grow overflow-y-auto pr-6">
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <span className="font-bold">ID:</span>
+                            <span className="col-span-3">{feedback.id}</span>
                           </div>
-                        </div>
-                        <div className="grid grid-cols-4 items-start gap-4">
-                          <span className="font-bold">Análise:</span>
-                          <div className="col-span-3">
-                            <p className="whitespace-pre-wrap break-words">{feedback.analysis}</p>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <span className="font-bold">Usuário:</span>
+                            <span className="col-span-3">{feedback.usuario}</span>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <span className="font-bold">Rating:</span>
+                            <span className="col-span-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
+                                {feedback.rating}
+                              </span>
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <span className="font-bold">Data:</span>
+                            <span className="col-span-3">{formatDate(feedback.data)}</span>
+                          </div>
+                          <div className="grid grid-cols-4 items-start gap-4">
+                            <span className="font-bold">Comentário:</span>
+                            <div className="col-span-3">
+                              <p className="whitespace-pre-wrap break-words">{feedback.comentario || '-'}</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-4 items-start gap-4">
+                            <span className="font-bold">Análise:</span>
+                            <div className="col-span-3">
+                              <p className="whitespace-pre-wrap break-words">{feedback.analysis}</p>
+                            </div>
                           </div>
                         </div>
                       </div>
