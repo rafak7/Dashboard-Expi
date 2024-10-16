@@ -51,9 +51,8 @@ interface FeedbackItem {
 export function DashboardHomeComponent() {
   const [timeRange, setTimeRange] = React.useState('7d')
   const [feedbackDataFromApi, setFeedbackDataFromApi] = React.useState<FeedbackItem[]>([])
-  const [uraDataFromApi, setUraDataFromApi] = React.useState<FeedbackItem[]>([]) // Novo estado para dados da API ura.json
 
-  // Função para buscar dados da API feedback.json
+  // Função para buscar dados da API
   React.useEffect(() => {
     const fetchFeedbackData = async () => {
       try {
@@ -71,39 +70,16 @@ export function DashboardHomeComponent() {
       }
     }
 
-    // Função para buscar dados da API ura.json
-    const fetchUraData = async () => {
-      try {
-        const response = await fetch('https://expi-e7219-default-rtdb.firebaseio.com/ura.json')
-        const data = await response.json()
-        if (data) {
-          const uraArray = Object.keys(data).map(key => ({
-            id: key,
-            ...data[key]
-          }))
-          setUraDataFromApi(uraArray)
-        }
-      } catch (error) {
-        console.error('Erro ao buscar dados da API ura.json:', error)
-      }
-    }
-
     fetchFeedbackData()
-    fetchUraData()
   }, [])
-
-  // Calcular o total de feedbacks recebidos combinando ambas as APIs
-  const totalFeedbacks = feedbackDataFromApi.length + uraDataFromApi.length
 
   // Preparar os dados para o gráfico de feedbacks recebidos
   const feedbackChartData = {
-    labels: [...(feedbackDataFromApi as FeedbackItem[]).map(f => new Date(f.createdAt).toLocaleDateString('pt-BR')),
-             ...(uraDataFromApi as FeedbackItem[]).map(f => new Date(f.createdAt).toLocaleDateString('pt-BR'))], // Combine os labels de ambas APIs
+    labels: (feedbackDataFromApi as FeedbackItem[]).map(f => new Date(f.createdAt).toLocaleDateString('pt-BR')),
     datasets: [
       {
         label: 'Feedbacks Recebidos',
-        data: [...(feedbackDataFromApi as FeedbackItem[]).map(f => f.rating ?? 0),
-               ...(uraDataFromApi as FeedbackItem[]).map(f => f.rating ?? 0)], // Combine os dados de ambas APIs
+        data: (feedbackDataFromApi as FeedbackItem[]).map(f => f.rating ?? 0),
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
       },
     ],
@@ -202,8 +178,8 @@ export function DashboardHomeComponent() {
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalFeedbacks}</div>
-              <Progress value={totalFeedbacks * 10} className="mt-2" />
+              <div className="text-2xl font-bold">{feedbackDataFromApi.length}</div>
+              <Progress value={feedbackDataFromApi.length * 10} className="mt-2" />
               <p className="text-xs text-muted-foreground mt-2">
                 +15% em relação ao mês anterior
               </p>
