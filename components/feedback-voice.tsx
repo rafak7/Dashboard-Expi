@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, Suspense } from 'react'
+import React, { useState} from 'react'
 import { 
   Table, 
   TableBody,  
@@ -52,16 +52,6 @@ import { getDatabase, ref, onValue, off } from "firebase/database";
 import { initializeApp } from "firebase/app";
 import { DataSnapshot } from 'firebase/database';
 import Link from "next/link"
-import { useRouter, useSearchParams } from 'next/navigation'
-
-// Firebase configuration
-const firebaseConfig = {
-  databaseURL: "https://expi-e7219-default-rtdb.firebaseio.com",
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
 
 ChartJS.register(
   CategoryScale, 
@@ -75,33 +65,36 @@ ChartJS.register(
   Legend
 )
 
+// Firebase configuration
+const firebaseConfig = {
+  databaseURL: "https://expi-e7219-default-rtdb.firebaseio.com",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
 // Update the Feedback type to match the new data structure
 type Feedback = {
   id: string
   usuario: string
-  rating: string
+  rating: 'Neutro' | 'Bom' | 'Ruim' | 'Insatisfeito'
   data: string
-  comentario: string
-  analysis: string
+  comentario?: string
+  
 }
 
 export function FeedbackVoice() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  
-  const [feedbackData, setFeedbackData] = useState<Feedback[]>([])
-  const [currentPage, setCurrentPage] = useState(() => {
-    const page = searchParams.get('page')
-    return page ? parseInt(page, 10) : 1
-  })
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [sortColumn, setSortColumn] = useState<keyof Feedback>('data')
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [feedbackData, setFeedbackData] = React.useState<Feedback[]>([])
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [itemsPerPage, setItemsPerPage] = React.useState(10)
+  const [sortColumn, setSortColumn] = React.useState<keyof Feedback>('data')
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc')
   const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar')
   const [isChartVisible, setIsChartVisible] = useState(true)
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right')
 
-  // Função para mudar o tipo de gráfico com animação
+  // Function to handle chart type change with animation
   const handleChartTypeChange = (newType: 'bar' | 'line' | 'pie') => {
     const currentTypeIndex = ['bar', 'line', 'pie'].indexOf(chartType)
     const newTypeIndex = ['bar', 'line', 'pie'].indexOf(newType)
@@ -112,8 +105,9 @@ export function FeedbackVoice() {
     setTimeout(() => {
       setChartType(newType)
       setIsChartVisible(true)
-    }, 300) // Esta duração deve coincidir com a duração da transição em CSS
+    }, 300) // This should match the transition duration in CSS
   }
+
 
   // Função para formatar data e hora
   const formatDate = (dateString: string) => {
@@ -139,8 +133,7 @@ export function FeedbackVoice() {
           usuario: data[key].usuario,
           rating: data[key].rating,
           data: data[key].data,
-          comentario: data[key].comentario,
-          analysis: data[key].analysis || '' // Use uma string vazia se analysis não existir
+          comentario: data[key].comentario || '-'
         }));
         setFeedbackData(feedbackArray);
       }
@@ -186,30 +179,6 @@ export function FeedbackVoice() {
       setSortColumn(column)
       setSortDirection('asc')
     }
-  }
-
-  // Atualiza a URL com a página atual
-  React.useEffect(() => {
-    const pageFromUrl = searchParams.get('page')
-    const newSearchParams = new URLSearchParams(searchParams)
-    
-    if (currentPage === 1) {
-      newSearchParams.delete('page')
-    } else {
-      newSearchParams.set('page', currentPage.toString())
-    }
-
-    const newUrl = newSearchParams.toString()
-      ? `/feedback-voice?${newSearchParams.toString()}`
-      : '/feedback-voice'
-
-    if (pageFromUrl !== currentPage.toString() || (currentPage === 1 && pageFromUrl !== null)) {
-      router.replace(newUrl, { scroll: false })
-    }
-  }, [currentPage, router, searchParams])
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage)
   }
 
   // Função para atribuir a cor correta ao rating
@@ -268,17 +237,16 @@ export function FeedbackVoice() {
   } as const;
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto p-6">
-          {/* Botão de voltar */}
-          <div className="mb-6">
-            <Link href="/">
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto p-6">
+        {/* Add the "Back to Home" button */}
+        <div className="mb-6">
+          <Link href="/">
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
 
           <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">Dashboard de Feedback</h1>
 
@@ -390,42 +358,42 @@ export function FeedbackVoice() {
                   </SelectContent>
                 </Select>
                 <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(1)}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronsLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm text-muted-foreground">
-                    Página {currentPage} de {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(totalPages)}
-                    disabled={currentPage === totalPages}
-                  >
-                    <ChevronsRight className="h-4 w-4" />
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
               </div>
               <Table>
                 <TableHeader>
@@ -505,12 +473,6 @@ export function FeedbackVoice() {
                                 <p className="whitespace-pre-wrap break-words">{feedback.comentario || '-'}</p>
                               </div>
                             </div>
-                            <div className="grid grid-cols-4 items-start gap-4">
-                              <span className="font-bold">Análise:</span>
-                              <div className="col-span-3">
-                                <p className="whitespace-pre-wrap break-words">{feedback.analysis}</p>
-                              </div>
-                            </div>
                           </div>
                         </div>
                       </DialogContent>
@@ -521,7 +483,6 @@ export function FeedbackVoice() {
             </CardContent>
           </Card>
         </div>
-      </div>
-    </Suspense>
+    </div>
   )
 }

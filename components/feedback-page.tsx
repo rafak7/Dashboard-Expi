@@ -81,6 +81,7 @@ type Feedback = {
   rating: 'Neutro' | 'Bom' | 'Ruim' | 'Insatisfeito'
   data: string
   comentario?: string
+  
 }
 
 export function FeedbackPageComponent() {
