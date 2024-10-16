@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Bar, Line, Doughnut } from 'react-chartjs-2'
@@ -17,7 +17,7 @@ import {
   Legend 
 } from 'chart.js'
 import Link from 'next/link'
-import { ArrowRight, Users, Star, MessageSquare, TrendingUp, Bell, Settings, Moon, Sun } from 'lucide-react'
+import { ArrowRight, Users, Star, MessageSquare, TrendingUp, Bell, Settings } from 'lucide-react'
 import { Avatar, AvatarFallback} from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { 
@@ -27,8 +27,6 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select"
-import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 ChartJS.register(
   CategoryScale, 
@@ -54,16 +52,6 @@ export function DashboardHomeComponent() {
   const [timeRange, setTimeRange] = React.useState('7d')
   const [feedbackDataFromApi, setFeedbackDataFromApi] = React.useState<FeedbackItem[]>([])
   const [uraDataFromApi, setUraDataFromApi] = React.useState<FeedbackItem[]>([]) // Novo estado para dados da API ura.json
-  const [theme, setTheme] = useState('light')
-
-  useEffect(() => {
-    // Verifica se há um tema salvo no localStorage
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme) {
-      setTheme(savedTheme)
-      document.documentElement.classList.add(savedTheme)
-    }
-  }, [])
 
   // Função para buscar dados da API feedback.json
   React.useEffect(() => {
@@ -156,65 +144,25 @@ export function DashboardHomeComponent() {
     { id: 4, user: 'Ana Rodrigues', action: 'entrou em contato com o suporte', time: '30 min atrás' },
   ]
 
-  const toggleTheme = (newTheme: string) => {
-    setTheme(newTheme)
-    localStorage.setItem('theme', newTheme)
-    document.documentElement.classList.remove('light', 'dark')
-    document.documentElement.classList.add(newTheme)
-  }
-
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-900'} relative overflow-hidden`}>
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
       {/* Elementos cromados de fundo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute -top-40 -left-40 w-80 h-80 ${theme === 'dark' ? 'bg-gradient-to-br from-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-400 to-purple-500'} rounded-full opacity-10 blur-3xl`}></div>
-        <div className={`absolute top-1/2 -right-20 w-60 h-60 ${theme === 'dark' ? 'bg-gradient-to-bl from-green-900 to-blue-900' : 'bg-gradient-to-bl from-green-400 to-blue-500'} rounded-full opacity-10 blur-3xl`}></div>
-        <div className={`absolute -bottom-40 left-1/2 w-72 h-72 ${theme === 'dark' ? 'bg-gradient-to-tr from-yellow-900 to-pink-900' : 'bg-gradient-to-tr from-yellow-400 to-pink-500'} rounded-full opacity-10 blur-3xl`}></div>
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-10 blur-3xl"></div>
+        <div className="absolute top-1/2 -right-20 w-60 h-60 bg-gradient-to-bl from-green-400 to-blue-500 rounded-full opacity-10 blur-3xl"></div>
+        <div className="absolute -bottom-40 left-1/2 w-72 h-72 bg-gradient-to-tr from-yellow-400 to-pink-500 rounded-full opacity-10 blur-3xl"></div>
       </div>
 
       <div className="container mx-auto p-6 relative z-10">
         <div className="flex justify-between items-center mb-8">
-          <h1 className={`text-4xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Dashboard</h1>
+          <h1 className="text-4xl font-bold text-gray-800">Dashboard</h1>
           <div className="flex items-center space-x-4">
-            <Button variant="outline" size="icon" className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+            <Button variant="outline" size="icon" className="bg-white bg-opacity-80 backdrop-blur-sm">
               <Bell className="h-4 w-4" />
             </Button>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="icon" className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className={`sm:max-w-[425px] ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
-                <DialogHeader>
-                  <DialogTitle>Configurações</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="flex items-center justify-between">
-                    <span>Tema</span>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant={theme === 'light' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => toggleTheme('light')}
-                      >
-                        <Sun className="h-4 w-4 mr-2" />
-                        Claro
-                      </Button>
-                      <Button
-                        variant={theme === 'dark' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => toggleTheme('dark')}
-                      >
-                        <Moon className="h-4 w-4 mr-2" />
-                        Escuro
-                      </Button>
-                    </div>
-                  </div>
-                  {/* Adicione mais opções de configuração aqui */}
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button variant="outline" size="icon" className="bg-white bg-opacity-80 backdrop-blur-sm">
+              <Settings className="h-4 w-4" />
+            </Button>
             <Avatar>
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
@@ -222,7 +170,7 @@ export function DashboardHomeComponent() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -235,7 +183,7 @@ export function DashboardHomeComponent() {
               </p>
             </CardContent>
           </Card>
-          <Card className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
               <Star className="h-4 w-4 text-muted-foreground" />
@@ -248,7 +196,7 @@ export function DashboardHomeComponent() {
               </p>
             </CardContent>
           </Card>
-          <Card className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Feedbacks Recebidos</CardTitle>
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
@@ -261,7 +209,7 @@ export function DashboardHomeComponent() {
               </p>
             </CardContent>
           </Card>
-          <Card className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Taxa de Crescimento</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -277,7 +225,7 @@ export function DashboardHomeComponent() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader className="flex items-center justify-between">
               <CardTitle>Feedbacks Recebidos</CardTitle>
               <Select value={timeRange} onValueChange={setTimeRange}>
@@ -308,7 +256,7 @@ export function DashboardHomeComponent() {
               />
             </CardContent>
           </Card>
-          <Card className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Atividade de Usuários</CardTitle>
             </CardHeader>
@@ -332,7 +280,7 @@ export function DashboardHomeComponent() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <Card className={`lg:col-span-2 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="lg:col-span-2 bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Atividade Recente</CardTitle>
             </CardHeader>
@@ -357,7 +305,7 @@ export function DashboardHomeComponent() {
               </div>
             </CardContent>
           </Card>
-          <Card className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Satisfação do Cliente</CardTitle>
             </CardHeader>
@@ -378,7 +326,7 @@ export function DashboardHomeComponent() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Feedbacks</CardTitle>
               <CardDescription>Gerencie e analise feedbacks</CardDescription>
@@ -393,7 +341,7 @@ export function DashboardHomeComponent() {
               </Link>
             </CardContent>
           </Card>
-          <Card className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Feedbacks Voice</CardTitle>
               <CardDescription>Gerencie e analise feedbacks de voz</CardDescription>
@@ -408,7 +356,7 @@ export function DashboardHomeComponent() {
               </Link>
             </CardContent>
           </Card>
-          <Card className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Usuários</CardTitle>
               <CardDescription>Gerencie contas de usuários</CardDescription>
@@ -423,7 +371,7 @@ export function DashboardHomeComponent() {
               </Link>
             </CardContent>
           </Card>
-          <Card className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 backdrop-blur-sm`}>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Relatórios</CardTitle>
               <CardDescription>Analise métricas detalhadas</CardDescription>

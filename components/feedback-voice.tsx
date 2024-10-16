@@ -54,7 +54,6 @@ import { DataSnapshot } from 'firebase/database';
 import Link from "next/link"
 import { useRouter, useSearchParams } from 'next/navigation'
 
-
 // Firebase configuration
 const firebaseConfig = {
   databaseURL: "https://expi-e7219-default-rtdb.firebaseio.com",
@@ -102,7 +101,7 @@ export function FeedbackVoice() {
   const [isChartVisible, setIsChartVisible] = useState(true)
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right')
 
- 
+  // Função para mudar o tipo de gráfico com animação
   const handleChartTypeChange = (newType: 'bar' | 'line' | 'pie') => {
     const currentTypeIndex = ['bar', 'line', 'pie'].indexOf(chartType)
     const newTypeIndex = ['bar', 'line', 'pie'].indexOf(newType)
@@ -128,7 +127,7 @@ export function FeedbackVoice() {
     });
   };
 
-  
+  // Busca os dados de feedback do Firebase
   React.useEffect(() => {
     const uraRef = ref(database, 'ura');
     
@@ -141,7 +140,7 @@ export function FeedbackVoice() {
           rating: data[key].rating,
           data: data[key].data,
           comentario: data[key].comentario,
-          analysis: data[key].analysis || '' 
+          analysis: data[key].analysis || '' // Use uma string vazia se analysis não existir
         }));
         setFeedbackData(feedbackArray);
       }
@@ -156,10 +155,10 @@ export function FeedbackVoice() {
   }, []);
 
   React.useEffect(() => {
-    setCurrentPage(1) 
+    setCurrentPage(1) // Reset para a primeira página quando itemsPerPage mudar
   }, [itemsPerPage])
 
- 
+  // Ordenação dos dados
   const sortedData = React.useMemo(() => {
     return [...feedbackData].sort((a, b) => {
       const aValue = a[sortColumn] ?? '';
@@ -268,10 +267,9 @@ export function FeedbackVoice() {
     },
   } as const;
 
-
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto p-6">
           {/* Botão de voltar */}
           <div className="mb-6">
@@ -282,41 +280,41 @@ export function FeedbackVoice() {
             </Link>
           </div>
 
-          <h1 className="text-4xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">Dashboard de Feedback</h1>
+          <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">Dashboard de Feedback</h1>
 
           {/* Cards de métricas */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="dark:bg-gray-800">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium dark:text-gray-100">Total de Feedbacks</CardTitle>
+                <CardTitle className="text-sm font-medium">Total de Feedbacks</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold dark:text-gray-100">{feedbackData.length}</div>
-                <p className="text-xs text-muted-foreground dark:text-gray-400">
+                <div className="text-2xl font-bold">{feedbackData.length}</div>
+                <p className="text-xs text-muted-foreground">
                   +20.1% em relação ao mês anterior
                 </p>
               </CardContent>
             </Card>
-            <Card className="dark:bg-gray-800">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium dark:text-gray-100">Avaliação Média</CardTitle>
+                <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold dark:text-gray-100">4.2</div>
-                <p className="text-xs text-muted-foreground dark:text-gray-400">
+                <div className="text-2xl font-bold">4.2</div>
+                <p className="text-xs text-muted-foreground">
                   +8% em relação ao mês anterior
                 </p>
               </CardContent>
             </Card>
-            <Card className="dark:bg-gray-800">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium dark:text-gray-100">Feedbacks Positivos</CardTitle>
+                <CardTitle className="text-sm font-medium">Feedbacks Positivos</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold dark:text-gray-100">
+                <div className="text-2xl font-bold">
                   {feedbackData.filter(f => f.rating === 'Bom').length}
                 </div>
-                <p className="text-xs text-muted-foreground dark:text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   +12% em relação ao mês anterior
                 </p>
               </CardContent>
@@ -324,9 +322,9 @@ export function FeedbackVoice() {
           </div>
 
           {/* Gráfico de Feedbacks */}
-          <Card className="mb-8 dark:bg-gray-800">
+          <Card className="mb-8">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="dark:text-gray-100">Gráfico de Feedbacks</CardTitle>
+              <CardTitle>Gráfico de Feedbacks</CardTitle>
               <div className="flex space-x-2">
                 <Button
                   variant={chartType === 'bar' ? 'default' : 'outline'}
@@ -375,9 +373,9 @@ export function FeedbackVoice() {
           </Card>
 
           {/* Feedbacks Recentes */}
-          <Card className="dark:bg-gray-800">
+          <Card>
             <CardHeader>
-              <CardTitle className="dark:text-gray-100">Feedbacks Recentes</CardTitle>
+              <CardTitle>Feedbacks Recentes</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="mb-4 flex items-center justify-between">
@@ -431,9 +429,9 @@ export function FeedbackVoice() {
               </div>
               <Table>
                 <TableHeader>
-                  <TableRow className="dark:border-gray-700">
-                    <TableHead className="w-[100px] dark:text-gray-300">
-                      <Button variant="ghost" onClick={() => handleSort('id')} className="dark:text-gray-300">
+                  <TableRow>
+                    <TableHead className="w-[100px]">
+                      <Button variant="ghost" onClick={() => handleSort('id')}>
                         ID {sortColumn === 'id' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </Button>
                     </TableHead>
@@ -459,38 +457,38 @@ export function FeedbackVoice() {
                   {paginatedData.map((feedback) => (
                     <Dialog key={feedback.id}>
                       <DialogTrigger asChild>
-                        <TableRow className="cursor-pointer transition-colors duration-200 ease-in-out hover:bg-gray-100 dark:hover:bg-gray-700">
-                          <TableCell className="font-medium dark:text-gray-300 transition-colors duration-200 ease-in-out group-hover:text-gray-900 dark:group-hover:text-white">{feedback.id}</TableCell>
-                          <TableCell className="dark:text-gray-300 transition-colors duration-200 ease-in-out group-hover:text-gray-900 dark:group-hover:text-white">{feedback.usuario}</TableCell>
-                          <TableCell className="dark:text-gray-300 transition-colors duration-200 ease-in-out group-hover:text-gray-900 dark:group-hover:text-white">
+                        <TableRow className="cursor-pointer hover:bg-gray-100">
+                          <TableCell className="font-medium">{feedback.id}</TableCell>
+                          <TableCell>{feedback.usuario}</TableCell>
+                          <TableCell>
                             {feedback.comentario
                               ? `${feedback.comentario.substring(0, 50)}...`
                               : 'Sem comentário'}
                           </TableCell>
                           <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)} transition-colors duration-200 ease-in-out`}>
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
                               {feedback.rating}
                             </span>
                           </TableCell>
-                          <TableCell className="text-right dark:text-gray-300 transition-colors duration-200 ease-in-out group-hover:text-gray-900 dark:group-hover:text-white">{formatDate(feedback.data)}</TableCell>
+                          <TableCell className="text-right">{formatDate(feedback.data)}</TableCell>
                         </TableRow>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col dark:bg-gray-800">
+                      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col">
                         <DialogHeader>
-                          <DialogTitle className="dark:text-gray-100">Detalhes do Feedback</DialogTitle>
+                          <DialogTitle>Detalhes do Feedback</DialogTitle>
                         </DialogHeader>
                         <div className="flex-grow overflow-y-auto pr-6">
                           <div className="grid gap-4 py-4">
                             <div className="grid grid-cols-4 items-center gap-4">
-                              <span className="font-bold dark:text-gray-300">ID:</span>
-                              <span className="col-span-3 dark:text-gray-300">{feedback.id}</span>
+                              <span className="font-bold">ID:</span>
+                              <span className="col-span-3">{feedback.id}</span>
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
-                              <span className="font-bold dark:text-gray-300">Usuário:</span>
-                              <span className="col-span-3 dark:text-gray-300">{feedback.usuario}</span>
+                              <span className="font-bold">Usuário:</span>
+                              <span className="col-span-3">{feedback.usuario}</span>
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
-                              <span className="font-bold dark:text-gray-300">Rating:</span>
+                              <span className="font-bold">Rating:</span>
                               <span className="col-span-3">
                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
                                   {feedback.rating}
@@ -498,19 +496,19 @@ export function FeedbackVoice() {
                               </span>
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
-                              <span className="font-bold dark:text-gray-300">Data:</span>
-                              <span className="col-span-3 dark:text-gray-300">{formatDate(feedback.data)}</span>
+                              <span className="font-bold">Data:</span>
+                              <span className="col-span-3">{formatDate(feedback.data)}</span>
                             </div>
                             <div className="grid grid-cols-4 items-start gap-4">
-                              <span className="font-bold dark:text-gray-300">Comentário:</span>
+                              <span className="font-bold">Comentário:</span>
                               <div className="col-span-3">
-                                <p className="whitespace-pre-wrap break-words dark:text-gray-300">{feedback.comentario || '-'}</p>
+                                <p className="whitespace-pre-wrap break-words">{feedback.comentario || '-'}</p>
                               </div>
                             </div>
                             <div className="grid grid-cols-4 items-start gap-4">
-                              <span className="font-bold dark:text-gray-300">Análise:</span>
+                              <span className="font-bold">Análise:</span>
                               <div className="col-span-3">
-                                <p className="whitespace-pre-wrap break-words dark:text-gray-300">{feedback.analysis}</p>
+                                <p className="whitespace-pre-wrap break-words">{feedback.analysis}</p>
                               </div>
                             </div>
                           </div>
