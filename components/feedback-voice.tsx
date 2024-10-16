@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import { 
   Table, 
   TableBody,  
@@ -54,6 +54,15 @@ import { DataSnapshot } from 'firebase/database';
 import Link from "next/link"
 import { useRouter, useSearchParams } from 'next/navigation'
 
+// Firebase configuration
+const firebaseConfig = {
+  databaseURL: "https://expi-e7219-default-rtdb.firebaseio.com",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
 ChartJS.register(
   CategoryScale, 
   LinearScale, 
@@ -65,16 +74,6 @@ ChartJS.register(
   Tooltip, 
   Legend
 )
-
-// Firebase configuration
-const firebaseConfig = {
-  // Add your Firebase configuration here
-  databaseURL: "https://expi-e7219-default-rtdb.firebaseio.com",
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
 
 // Update the Feedback type to match the new data structure
 type Feedback = {
@@ -90,19 +89,19 @@ export function FeedbackVoice() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
-  const [feedbackData, setFeedbackData] = React.useState<Feedback[]>([])
-  const [currentPage, setCurrentPage] = React.useState(() => {
+  const [feedbackData, setFeedbackData] = useState<Feedback[]>([])
+  const [currentPage, setCurrentPage] = useState(() => {
     const page = searchParams.get('page')
     return page ? parseInt(page, 10) : 1
   })
-  const [itemsPerPage, setItemsPerPage] = React.useState(10)
-  const [sortColumn, setSortColumn] = React.useState<keyof Feedback>('data')
-  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc')
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [sortColumn, setSortColumn] = useState<keyof Feedback>('data')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar')
   const [isChartVisible, setIsChartVisible] = useState(true)
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right')
 
-  // Function to handle chart type change with animation
+  // Função para mudar o tipo de gráfico com animação
   const handleChartTypeChange = (newType: 'bar' | 'line' | 'pie') => {
     const currentTypeIndex = ['bar', 'line', 'pie'].indexOf(chartType)
     const newTypeIndex = ['bar', 'line', 'pie'].indexOf(newType)
@@ -113,7 +112,7 @@ export function FeedbackVoice() {
     setTimeout(() => {
       setChartType(newType)
       setIsChartVisible(true)
-    }, 300) // This should match the transition duration in CSS
+    }, 300) // Esta duração deve coincidir com a duração da transição em CSS
   }
 
   // Função para formatar data e hora
@@ -128,7 +127,7 @@ export function FeedbackVoice() {
     });
   };
 
-  // Update the data fetching logic
+  // Busca os dados de feedback do Firebase
   React.useEffect(() => {
     const uraRef = ref(database, 'ura');
     
@@ -149,7 +148,7 @@ export function FeedbackVoice() {
 
     onValue(uraRef, handleData);
 
-    // Cleanup function
+    // Cleanup
     return () => {
       off(uraRef, 'value', handleData);
     };
@@ -187,6 +186,30 @@ export function FeedbackVoice() {
       setSortColumn(column)
       setSortDirection('asc')
     }
+  }
+
+  // Atualiza a URL com a página atual
+  React.useEffect(() => {
+    const pageFromUrl = searchParams.get('page')
+    const newSearchParams = new URLSearchParams(searchParams)
+    
+    if (currentPage === 1) {
+      newSearchParams.delete('page')
+    } else {
+      newSearchParams.set('page', currentPage.toString())
+    }
+
+    const newUrl = newSearchParams.toString()
+      ? `/feedback-voice?${newSearchParams.toString()}`
+      : '/feedback-voice'
+
+    if (pageFromUrl !== currentPage.toString() || (currentPage === 1 && pageFromUrl !== null)) {
+      router.replace(newUrl, { scroll: false })
+    }
+  }, [currentPage, router, searchParams])
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
   }
 
   // Função para atribuir a cor correta ao rating
@@ -244,279 +267,261 @@ export function FeedbackVoice() {
     },
   } as const;
 
-  React.useEffect(() => {
-    const pageFromUrl = searchParams.get('page')
-    const newSearchParams = new URLSearchParams(searchParams)
-    
-    if (currentPage === 1) {
-      newSearchParams.delete('page')
-    } else {
-      newSearchParams.set('page', currentPage.toString())
-    }
-
-    const newUrl = newSearchParams.toString()
-      ? `/feedback-voice?${newSearchParams.toString()}`
-      : '/feedback-voice'
-
-    if (pageFromUrl !== currentPage.toString() || (currentPage === 1 && pageFromUrl !== null)) {
-      router.replace(newUrl, { scroll: false })
-    }
-  }, [currentPage, router, searchParams])
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage)
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-6">
-        {/* Add the "Back to Home" button */}
-        <div className="mb-6">
-          <Link href="/">
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto p-6">
+          {/* Botão de voltar */}
+          <div className="mb-6">
+            <Link href="/">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
 
-        <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">Dashboard de Feedback</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Feedbacks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{feedbackData.length}</div>
-              <p className="text-xs text-muted-foreground">
-                +20.1% em relação ao mês anterior
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">4.2</div>
-              <p className="text-xs text-muted-foreground">
-                +8% em relação ao mês anterior
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Feedbacks Positivos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {feedbackData.filter(f => f.rating === 'Bom').length}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                +12% em relação ao mês anterior
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+          <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">Dashboard de Feedback</h1>
 
-        <Card className="mb-8">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Gráfico de Feedbacks</CardTitle>
-            <div className="flex space-x-2">
-              <Button
-                variant={chartType === 'bar' ? 'default' : 'outline'}
-                size="icon"
-                onClick={() => handleChartTypeChange('bar')}
-              >
-                <BarChart className="h-4 w-4" />
-                <span className="sr-only">Gráfico de Barras</span>
-              </Button>
-              <Button
-                variant={chartType === 'line' ? 'default' : 'outline'}
-                size="icon"
-                onClick={() => handleChartTypeChange('line')}
-              >
-                <LineChart className="h-4 w-4" />
-                <span className="sr-only">Gráfico de Linha</span>
-              </Button>
-              <Button
-                variant={chartType === 'pie' ? 'default' : 'outline'}
-                size="icon"
-                onClick={() => handleChartTypeChange('pie')}
-              >
-                <PieChart className="h-4 w-4" />
-                <span className="sr-only">Gráfico de Pizza</span>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="flex justify-center items-center overflow-hidden">
-            <div 
-              className={`w-full max-w-2xl h-[300px] ${chartType === 'pie' ? 'flex justify-center items-center' : ''} 
-                transition-all duration-300 ease-in-out 
-                ${isChartVisible 
-                  ? 'opacity-100 transform translate-x-0' 
-                  : `opacity-0 transform ${slideDirection === 'left' ? '-translate-x-full' : 'translate-x-full'}`
-                }`}
-            >
-              {chartType === 'bar' && <Bar data={chartData} options={chartOptions} />}
-              {chartType === 'line' && <Line data={chartData} options={chartOptions} />}
-              {chartType === 'pie' && (
-                <div className="w-[300px] h-[300px]">
-                  <Pie data={chartData} options={chartOptions} />
+          {/* Cards de métricas */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total de Feedbacks</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{feedbackData.length}</div>
+                <p className="text-xs text-muted-foreground">
+                  +20.1% em relação ao mês anterior
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">4.2</div>
+                <p className="text-xs text-muted-foreground">
+                  +8% em relação ao mês anterior
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Feedbacks Positivos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {feedbackData.filter(f => f.rating === 'Bom').length}
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                <p className="text-xs text-muted-foreground">
+                  +12% em relação ao mês anterior
+                </p>
+              </CardContent>
+            </Card>
+          </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Feedbacks Recentes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4 flex items-center justify-between">
-              <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Itens por página" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5 por página</SelectItem>
-                  <SelectItem value="10">10 por página</SelectItem>
-                  <SelectItem value="20">20 por página</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex items-center space-x-2">
+          {/* Gráfico de Feedbacks */}
+          <Card className="mb-8">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Gráfico de Feedbacks</CardTitle>
+              <div className="flex space-x-2">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(1)}
-                  disabled={currentPage === 1}
+                  variant={chartType === 'bar' ? 'default' : 'outline'}
+                  size="icon"
+                  onClick={() => handleChartTypeChange('bar')}
                 >
-                  <ChevronsLeft className="h-4 w-4" />
+                  <BarChart className="h-4 w-4" />
+                  <span className="sr-only">Gráfico de Barras</span>
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
-                  disabled={currentPage === 1}
+                  variant={chartType === 'line' ? 'default' : 'outline'}
+                  size="icon"
+                  onClick={() => handleChartTypeChange('line')}
                 >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  Página {currentPage} de {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="h-4 w-4" />
+                  <LineChart className="h-4 w-4" />
+                  <span className="sr-only">Gráfico de Linha</span>
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={currentPage === totalPages}
+                  variant={chartType === 'pie' ? 'default' : 'outline'}
+                  size="icon"
+                  onClick={() => handleChartTypeChange('pie')}
                 >
-                  <ChevronsRight className="h-4 w-4" />
+                  <PieChart className="h-4 w-4" />
+                  <span className="sr-only">Gráfico de Pizza</span>
                 </Button>
               </div>
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">
-                    <Button variant="ghost" onClick={() => handleSort('id')}>
-                      ID {sortColumn === 'id' && (sortDirection === 'asc' ? '↑' : '↓')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button variant="ghost" onClick={() => handleSort('usuario')}>
-                      Usuário {sortColumn === 'usuario' && (sortDirection === 'asc' ? '↑' : '↓')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>Comentário</TableHead>
-                  <TableHead>
-                    <Button variant="ghost" onClick={() => handleSort('rating')}>
-                      Rating {sortColumn === 'rating' && (sortDirection === 'asc' ? '↑' : '↓')}
-                    </Button>
-                  </TableHead>
-                  <TableHead className="text-right">
-                    <Button variant="ghost" onClick={() => handleSort('data')}>
-                      Data {sortColumn === 'data' && (sortDirection === 'asc' ? '↑' : '↓')}
-                    </Button>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedData.map((feedback) => (
-                  <Dialog key={feedback.id}>
-                    <DialogTrigger asChild>
-                      <TableRow className="cursor-pointer hover:bg-gray-100">
-                        <TableCell className="font-medium">{feedback.id}</TableCell>
-                        <TableCell>{feedback.usuario}</TableCell>
-                        <TableCell>
-                          {feedback.comentario
-                            ? `${feedback.comentario.substring(0, 50)}...`
-                            : 'Sem comentário'}
-                        </TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
-                            {feedback.rating}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">{formatDate(feedback.data)}</TableCell>
-                      </TableRow>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col">
-                      <DialogHeader>
-                        <DialogTitle>Detalhes do Feedback</DialogTitle>
-                      </DialogHeader>
-                      <div className="flex-grow overflow-y-auto pr-6">
-                        <div className="grid gap-4 py-4">
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <span className="font-bold">ID:</span>
-                            <span className="col-span-3">{feedback.id}</span>
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <span className="font-bold">Usuário:</span>
-                            <span className="col-span-3">{feedback.usuario}</span>
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <span className="font-bold">Rating:</span>
-                            <span className="col-span-3">
-                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
-                                {feedback.rating}
-                              </span>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center overflow-hidden">
+              <div 
+                className={`w-full max-w-2xl h-[300px] ${chartType === 'pie' ? 'flex justify-center items-center' : ''} 
+                  transition-all duration-300 ease-in-out 
+                  ${isChartVisible 
+                    ? 'opacity-100 transform translate-x-0' 
+                    : `opacity-0 transform ${slideDirection === 'left' ? '-translate-x-full' : 'translate-x-full'}`
+                  }`}
+              >
+                {chartType === 'bar' && <Bar data={chartData} options={chartOptions} />}
+                {chartType === 'line' && <Line data={chartData} options={chartOptions} />}
+                {chartType === 'pie' && (
+                  <div className="w-[300px] h-[300px]">
+                    <Pie data={chartData} options={chartOptions} />
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Feedbacks Recentes */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Feedbacks Recentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4 flex items-center justify-between">
+                <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Itens por página" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 por página</SelectItem>
+                    <SelectItem value="10">10 por página</SelectItem>
+                    <SelectItem value="20">20 por página</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(1)}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(totalPages)}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">
+                      <Button variant="ghost" onClick={() => handleSort('id')}>
+                        ID {sortColumn === 'id' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => handleSort('usuario')}>
+                        Usuário {sortColumn === 'usuario' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>Comentário</TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => handleSort('rating')}>
+                        Rating {sortColumn === 'rating' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-right">
+                      <Button variant="ghost" onClick={() => handleSort('data')}>
+                        Data {sortColumn === 'data' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </Button>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedData.map((feedback) => (
+                    <Dialog key={feedback.id}>
+                      <DialogTrigger asChild>
+                        <TableRow className="cursor-pointer hover:bg-gray-100">
+                          <TableCell className="font-medium">{feedback.id}</TableCell>
+                          <TableCell>{feedback.usuario}</TableCell>
+                          <TableCell>
+                            {feedback.comentario
+                              ? `${feedback.comentario.substring(0, 50)}...`
+                              : 'Sem comentário'}
+                          </TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
+                              {feedback.rating}
                             </span>
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <span className="font-bold">Data:</span>
-                            <span className="col-span-3">{formatDate(feedback.data)}</span>
-                          </div>
-                          <div className="grid grid-cols-4 items-start gap-4">
-                            <span className="font-bold">Comentário:</span>
-                            <div className="col-span-3">
-                              <p className="whitespace-pre-wrap break-words">{feedback.comentario || '-'}</p>
+                          </TableCell>
+                          <TableCell className="text-right">{formatDate(feedback.data)}</TableCell>
+                        </TableRow>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col">
+                        <DialogHeader>
+                          <DialogTitle>Detalhes do Feedback</DialogTitle>
+                        </DialogHeader>
+                        <div className="flex-grow overflow-y-auto pr-6">
+                          <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <span className="font-bold">ID:</span>
+                              <span className="col-span-3">{feedback.id}</span>
                             </div>
-                          </div>
-                          <div className="grid grid-cols-4 items-start gap-4">
-                            <span className="font-bold">Análise:</span>
-                            <div className="col-span-3">
-                              <p className="whitespace-pre-wrap break-words">{feedback.analysis}</p>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <span className="font-bold">Usuário:</span>
+                              <span className="col-span-3">{feedback.usuario}</span>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <span className="font-bold">Rating:</span>
+                              <span className="col-span-3">
+                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
+                                  {feedback.rating}
+                                </span>
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <span className="font-bold">Data:</span>
+                              <span className="col-span-3">{formatDate(feedback.data)}</span>
+                            </div>
+                            <div className="grid grid-cols-4 items-start gap-4">
+                              <span className="font-bold">Comentário:</span>
+                              <div className="col-span-3">
+                                <p className="whitespace-pre-wrap break-words">{feedback.comentario || '-'}</p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-4 items-start gap-4">
+                              <span className="font-bold">Análise:</span>
+                              <div className="col-span-3">
+                                <p className="whitespace-pre-wrap break-words">{feedback.analysis}</p>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                      </DialogContent>
+                    </Dialog>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </Suspense>
   )
 }
