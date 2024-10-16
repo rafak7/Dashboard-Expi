@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useTheme } from "next-themes"
 import { 
   Table, 
   TableBody,  
@@ -84,6 +85,8 @@ type Feedback = {
 }
 
 export function FeedbackPageComponent() {
+  const { theme, systemTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
   const [feedbackData, setFeedbackData] = React.useState<Feedback[]>([])
   const [currentPage, setCurrentPage] = React.useState(1)
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
@@ -92,6 +95,12 @@ export function FeedbackPageComponent() {
   const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar')
   const [isChartVisible, setIsChartVisible] = useState(true)
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right')
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const currentTheme = theme === 'system' ? systemTheme : theme
 
   // Function to handle chart type change with animation
   const handleChartTypeChange = (newType: 'bar' | 'line' | 'pie') => {
@@ -181,11 +190,13 @@ export function FeedbackPageComponent() {
 
   // Função para atribuir a cor correta ao rating
   const getRatingColor = (rating: Feedback['rating']) => {
+    if (!mounted) return ''
+    const isDarkMode = currentTheme === 'dark'
     switch (rating) {
-      case 'Bom': return 'text-green-600 bg-green-100'
-      case 'Neutro': return 'text-yellow-600 bg-yellow-100'
-      case 'Ruim': return 'text-orange-600 bg-orange-100'
-      case 'Insatisfeito': return 'text-red-600 bg-red-100'
+      case 'Bom': return isDarkMode ? 'text-green-400 bg-green-900' : 'text-green-600 bg-green-100'
+      case 'Neutro': return isDarkMode ? 'text-yellow-400 bg-yellow-900' : 'text-yellow-600 bg-yellow-100'
+      case 'Ruim': return isDarkMode ? 'text-orange-400 bg-orange-900' : 'text-orange-600 bg-orange-100'
+      case 'Insatisfeito': return isDarkMode ? 'text-red-400 bg-red-900' : 'text-red-600 bg-red-100'
       default: return ''
     }
   }
@@ -202,7 +213,9 @@ export function FeedbackPageComponent() {
           feedbackData.filter(f => f.rating === 'Ruim').length,
           feedbackData.filter(f => f.rating === 'Insatisfeito').length,
         ],
-        backgroundColor: ['rgba(34, 197, 94, 0.6)', 'rgba(234, 179, 8, 0.6)', 'rgba(249, 115, 22, 0.6)', 'rgba(239, 68, 68, 0.6)'],
+        backgroundColor: currentTheme === 'dark' 
+          ? ['rgba(34, 197, 94, 0.8)', 'rgba(234, 179, 8, 0.8)', 'rgba(249, 115, 22, 0.8)', 'rgba(239, 68, 68, 0.8)']
+          : ['rgba(34, 197, 94, 0.6)', 'rgba(234, 179, 8, 0.6)', 'rgba(249, 115, 22, 0.6)', 'rgba(239, 68, 68, 0.6)'],
         borderColor: ['rgba(34, 197, 94, 1)', 'rgba(234, 179, 8, 1)', 'rgba(249, 115, 22, 1)', 'rgba(239, 68, 68, 1)'],
         borderWidth: 1,
       },
@@ -214,18 +227,34 @@ export function FeedbackPageComponent() {
     scales: {
       x: {
         type: 'category' as const,
+        ticks: {
+          color: currentTheme === 'dark' ? '#e5e7eb' : '#374151',
+        },
+        grid: {
+          color: currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        },
       },
       y: {
         beginAtZero: true,
+        ticks: {
+          color: currentTheme === 'dark' ? '#e5e7eb' : '#374151',
+        },
+        grid: {
+          color: currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        },
       },
     },
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          color: currentTheme === 'dark' ? '#e5e7eb' : '#374151',
+        },
       },
       title: {
         display: true,
         text: 'Distribuição de Feedbacks',
+        color: currentTheme === 'dark' ? '#e5e7eb' : '#374151',
         font: {
           size: 16,
           weight: 'bold' as const,
@@ -234,8 +263,10 @@ export function FeedbackPageComponent() {
     },
   } as const;
 
+  if (!mounted) return null
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto p-6">
         {/* Add the "Back to Home" button */}
         <div className="mb-6">
@@ -246,47 +277,47 @@ export function FeedbackPageComponent() {
           </Link>
         </div>
 
-        <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">Dashboard de Feedback</h1>
+        <h1 className="text-4xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">Dashboard de Feedback</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
+          <Card className="dark:bg-gray-800">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Feedbacks</CardTitle>
+              <CardTitle className="text-sm font-medium dark:text-gray-100">Total de Feedbacks</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{feedbackData.length}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold dark:text-gray-100">{feedbackData.length}</div>
+              <p className="text-xs text-muted-foreground dark:text-gray-400">
                 +20.1% em relação ao mês anterior
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="dark:bg-gray-800">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
+              <CardTitle className="text-sm font-medium dark:text-gray-100">Avaliação Média</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">4.2</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold dark:text-gray-100">4.2</div>
+              <p className="text-xs text-muted-foreground dark:text-gray-400">
                 +8% em relação ao mês anterior
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="dark:bg-gray-800">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Feedbacks Positivos</CardTitle>
+              <CardTitle className="text-sm font-medium dark:text-gray-100">Feedbacks Positivos</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold dark:text-gray-100">
                 {feedbackData.filter(f => f.rating === 'Bom').length}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground dark:text-gray-400">
                 +12% em relação ao mês anterior
               </p>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="mb-8">
+        <Card className="mb-8 dark:bg-gray-800">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Gráfico de Feedbacks</CardTitle>
             <div className="flex space-x-2">
@@ -336,9 +367,9 @@ export function FeedbackPageComponent() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dark:bg-gray-800">
           <CardHeader>
-            <CardTitle>Feedbacks Recentes</CardTitle>
+            <CardTitle className="dark:text-gray-100">Feedbacks Recentes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mb-4 flex items-center justify-between">
@@ -420,51 +451,70 @@ export function FeedbackPageComponent() {
                 {paginatedData.map((feedback) => (
                   <Dialog key={feedback.id}>
                     <DialogTrigger asChild>
-                      <TableRow className="cursor-pointer hover:bg-gray-100">
-                        <TableCell className="font-medium">{feedback.id}</TableCell>
-                        <TableCell>{feedback.usuario}</TableCell>
-                        <TableCell>{feedback.comentario || '-'}</TableCell>
+                      <TableRow 
+                        className="cursor-pointer transition-all duration-200 ease-in-out
+                                   hover:bg-gray-100 dark:hover:bg-gray-700
+                                   hover:shadow-md dark:hover:shadow-gray-800
+                                   group"
+                      >
+                        <TableCell className="font-medium dark:text-gray-300 group-hover:font-semibold">
+                          {feedback.id}
+                        </TableCell>
+                        <TableCell className="dark:text-gray-300">{feedback.usuario}</TableCell>
+                        <TableCell className="dark:text-gray-300 max-w-xs truncate">
+                          {feedback.comentario || '-'}
+                          {feedback.comentario && (
+                            <span className="hidden group-hover:inline ml-2 text-blue-500 dark:text-blue-400">
+                              (Clique para ver mais)
+                            </span>
+                          )}
+                        </TableCell>
                         <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}
+                                            transition-transform duration-200 group-hover:scale-110 inline-block`}>
                             {feedback.rating}
                           </span>
                         </TableCell>
-                        <TableCell className="text-right">{formatDate(feedback.data)}</TableCell>
+                        <TableCell className="text-right dark:text-gray-300">
+                          {formatDate(feedback.data)}
+                        </TableCell>
                       </TableRow>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px]">
+                    <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col dark:bg-gray-800">
                       <DialogHeader>
-                        <DialogTitle>Detalhes do Feedback</DialogTitle>
+                        <DialogTitle className="dark:text-gray-100">Detalhes do Feedback</DialogTitle>
                       </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">ID:</span>
-                          <span className="col-span-3">{feedback.id}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">Usuário:</span>
-                          <span className="col-span-3">{feedback.usuario}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">Rating:</span>
-                          <span className="col-span-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
-                              {feedback.rating}
+                      <div className="flex-grow overflow-y-auto pr-6">
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <span className="font-bold dark:text-gray-300">ID:</span>
+                            <span className="col-span-3 dark:text-gray-300">{feedback.id}</span>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <span className="font-bold dark:text-gray-300">Usuário:</span>
+                            <span className="col-span-3 dark:text-gray-300">{feedback.usuario}</span>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <span className="font-bold dark:text-gray-300">Rating:</span>
+                            <span className="col-span-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
+                                {feedback.rating}
+                              </span>
                             </span>
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">Data:</span>
-                          <span className="col-span-3">{formatDate(feedback.data)}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-start gap-4">
-                          <span className="font-bold">Comentário:</span>
-                          <div className="col-span-3">
-                            {feedback.comentario && feedback.comentario.length > 100 ? (  
-                              <p className="whitespace-pre-wrap break-words">{feedback.comentario}</p>
-                            ) : (
-                              <span>{feedback.comentario || '-'}</span>
-                            )}
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <span className="font-bold dark:text-gray-300">Data:</span>
+                            <span className="col-span-3 dark:text-gray-300">{formatDate(feedback.data)}</span>
+                          </div>
+                          <div className="grid grid-cols-4 items-start gap-4">
+                            <span className="font-bold dark:text-gray-300">Comentário:</span>
+                            <div className="col-span-3">
+                              {feedback.comentario && feedback.comentario.length > 100 ? (  
+                                <p className="whitespace-pre-wrap break-words dark:text-gray-300">{feedback.comentario}</p>
+                              ) : (
+                                <span className="dark:text-gray-300">{feedback.comentario || '-'}</span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
