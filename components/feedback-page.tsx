@@ -338,22 +338,22 @@ export function FeedbackPageComponent() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Feedbacks Recentes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4 flex items-center justify-between">
-              <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Itens por página" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5 por página</SelectItem>
-                  <SelectItem value="10">10 por página</SelectItem>
-                  <SelectItem value="20">20 por página</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex items-center space-x-2">
+            <CardHeader>
+              <CardTitle>Feedbacks Recentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4 flex items-center justify-between">
+                <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Itens por página" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 por página</SelectItem>
+                    <SelectItem value="10">10 por página</SelectItem>
+                    <SelectItem value="20">20 por página</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -390,92 +390,94 @@ export function FeedbackPageComponent() {
                   <ChevronsRight className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">
-                    <Button variant="ghost" onClick={() => handleSort('id')}>
-                      ID {sortColumn === 'id' && (sortDirection === 'asc' ? '↑' : '↓')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button variant="ghost" onClick={() => handleSort('usuario')}>
-                      Usuário {sortColumn === 'usuario' && (sortDirection === 'asc' ? '↑' : '↓')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>Comentário</TableHead>
-                  <TableHead>
-                    <Button variant="ghost" onClick={() => handleSort('rating')}>
-                      Rating {sortColumn === 'rating' && (sortDirection === 'asc' ? '↑' : '↓')}
-                    </Button>
-                  </TableHead>
-                  <TableHead className="text-right">
-                    <Button variant="ghost" onClick={() => handleSort('data')}>
-                      Data {sortColumn === 'data' && (sortDirection === 'asc' ? '↑' : '↓')}
-                    </Button>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedData.map((feedback) => (
-                  <Dialog key={feedback.id}>
-                    <DialogTrigger asChild>
-                      <TableRow className="cursor-pointer hover:bg-gray-100">
-                        <TableCell className="font-medium">{feedback.id}</TableCell>
-                        <TableCell>{feedback.usuario}</TableCell>
-                        <TableCell>{feedback.comentario || '-'}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
-                            {feedback.rating}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">{formatDate(feedback.data)}</TableCell>
-                      </TableRow>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px]">
-                      <DialogHeader>
-                        <DialogTitle>Detalhes do Feedback</DialogTitle>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">ID:</span>
-                          <span className="col-span-3">{feedback.id}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">Usuário:</span>
-                          <span className="col-span-3">{feedback.usuario}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">Rating:</span>
-                          <span className="col-span-3">
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">
+                      <Button variant="ghost" onClick={() => handleSort('id')}>
+                        ID {sortColumn === 'id' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => handleSort('usuario')}>
+                        Usuário {sortColumn === 'usuario' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>Comentário</TableHead>
+                    <TableHead>
+                      <Button variant="ghost" onClick={() => handleSort('rating')}>
+                        Rating {sortColumn === 'rating' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </Button>
+                    </TableHead>
+                    <TableHead className="text-right">
+                      <Button variant="ghost" onClick={() => handleSort('data')}>
+                        Data {sortColumn === 'data' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </Button>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedData.map((feedback) => (
+                    <Dialog key={feedback.id}>
+                      <DialogTrigger asChild>
+                        <TableRow className="cursor-pointer hover:bg-gray-100">
+                          <TableCell className="font-medium">{feedback.id}</TableCell>
+                          <TableCell>{feedback.usuario}</TableCell>
+                          <TableCell>
+                            {feedback.comentario
+                              ? `${feedback.comentario.substring(0, 50)}...`
+                              : 'Sem comentário'}
+                          </TableCell>
+                          <TableCell>
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
                               {feedback.rating}
                             </span>
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <span className="font-bold">Data:</span>
-                          <span className="col-span-3">{formatDate(feedback.data)}</span>
-                        </div>
-                        <div className="grid grid-cols-4 items-start gap-4">
-                          <span className="font-bold">Comentário:</span>
-                          <div className="col-span-3">
-                            {feedback.comentario && feedback.comentario.length > 100 ? (  
-                              <p className="whitespace-pre-wrap break-words">{feedback.comentario}</p>
-                            ) : (
-                              <span>{feedback.comentario || '-'}</span>
-                            )}
+                          </TableCell>
+                          <TableCell className="text-right">{formatDate(feedback.data)}</TableCell>
+                        </TableRow>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col">
+                        <DialogHeader>
+                          <DialogTitle>Detalhes do Feedback</DialogTitle>
+                        </DialogHeader>
+                        <div className="flex-grow overflow-y-auto pr-6">
+                          <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <span className="font-bold">ID:</span>
+                              <span className="col-span-3">{feedback.id}</span>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <span className="font-bold">Usuário:</span>
+                              <span className="col-span-3">{feedback.usuario}</span>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <span className="font-bold">Rating:</span>
+                              <span className="col-span-3">
+                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
+                                  {feedback.rating}
+                                </span>
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <span className="font-bold">Data:</span>
+                              <span className="col-span-3">{formatDate(feedback.data)}</span>
+                            </div>
+                            <div className="grid grid-cols-4 items-start gap-4">
+                              <span className="font-bold">Comentário:</span>
+                              <div className="col-span-3">
+                                <p className="whitespace-pre-wrap break-words">{feedback.comentario || '-'}</p>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                      </DialogContent>
+                    </Dialog>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
       </div>
     </div>
   )
