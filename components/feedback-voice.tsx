@@ -52,6 +52,7 @@ import { getDatabase, ref, onValue, off } from "firebase/database";
 import { initializeApp } from "firebase/app";
 import { DataSnapshot } from 'firebase/database';
 import Link from "next/link"
+import { useRouter, useSearchParams } from 'next/navigation'
 
 ChartJS.register(
   CategoryScale, 
@@ -75,17 +76,25 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
+// Update the Feedback type to match the new data structure
 type Feedback = {
   id: string
   usuario: string
-  rating: 'Neutro' | 'Bom' | 'Ruim' | 'Insatisfeito'
+  rating: string
   data: string
-  comentario?: string
+  comentario: string
+  analysis: string
 }
 
-export function FeedbackPageComponent() {
+export function FeedbackVoice() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
   const [feedbackData, setFeedbackData] = React.useState<Feedback[]>([])
-  const [currentPage, setCurrentPage] = React.useState(1)
+  const [currentPage, setCurrentPage] = React.useState(() => {
+    const page = searchParams.get('page')
+    return page ? parseInt(page, 10) : 1
+  })
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
   const [sortColumn, setSortColumn] = React.useState<keyof Feedback>('data')
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc')
@@ -119,9 +128,9 @@ export function FeedbackPageComponent() {
     });
   };
 
-  // Realtime data fetching
+  // Update the data fetching logic
   React.useEffect(() => {
-    const feedbackRef = ref(database, 'feedback');
+    const uraRef = ref(database, 'ura');
     
     const handleData = (snapshot: DataSnapshot) => {
       if (snapshot.exists()) {
@@ -131,17 +140,18 @@ export function FeedbackPageComponent() {
           usuario: data[key].usuario,
           rating: data[key].rating,
           data: data[key].data,
-          comentario: data[key].comentario || '-'
+          comentario: data[key].comentario,
+          analysis: data[key].analysis || '' // Use uma string vazia se analysis não existir
         }));
         setFeedbackData(feedbackArray);
       }
     };
 
-    onValue(feedbackRef, handleData);
+    onValue(uraRef, handleData);
 
     // Cleanup function
     return () => {
-      off(feedbackRef, 'value', handleData);
+      off(uraRef, 'value', handleData);
     };
   }, []);
 
@@ -233,6 +243,29 @@ export function FeedbackPageComponent() {
       },
     },
   } as const;
+
+  React.useEffect(() => {
+    const pageFromUrl = searchParams.get('page')
+    const newSearchParams = new URLSearchParams(searchParams)
+    
+    if (currentPage === 1) {
+      newSearchParams.delete('page')
+    } else {
+      newSearchParams.set('page', currentPage.toString())
+    }
+
+    const newUrl = newSearchParams.toString()
+      ? `/feedback-voice?${newSearchParams.toString()}`
+      : '/feedback-voice'
+
+    if (pageFromUrl !== currentPage.toString() || (currentPage === 1 && pageFromUrl !== null)) {
+      router.replace(newUrl, { scroll: false })
+    }
+  }, [currentPage, router, searchParams])
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -356,7 +389,7 @@ export function FeedbackPageComponent() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(1)}
+                  onClick={() => handlePageChange(1)}
                   disabled={currentPage === 1}
                 >
                   <ChevronsLeft className="h-4 w-4" />
@@ -364,7 +397,7 @@ export function FeedbackPageComponent() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -375,7 +408,7 @@ export function FeedbackPageComponent() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                   disabled={currentPage === totalPages}
                 >
                   <ChevronRight className="h-4 w-4" />
@@ -383,7 +416,7 @@ export function FeedbackPageComponent() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(totalPages)}
+                  onClick={() => handlePageChange(totalPages)}
                   disabled={currentPage === totalPages}
                 >
                   <ChevronsRight className="h-4 w-4" />
@@ -423,7 +456,11 @@ export function FeedbackPageComponent() {
                       <TableRow className="cursor-pointer hover:bg-gray-100">
                         <TableCell className="font-medium">{feedback.id}</TableCell>
                         <TableCell>{feedback.usuario}</TableCell>
-                        <TableCell>{feedback.comentario || '-'}</TableCell>
+                        <TableCell>
+                          {feedback.comentario
+                            ? `${feedback.comentario.substring(0, 50)}...`
+                            : 'Sem comentário'}
+                        </TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRatingColor(feedback.rating)}`}>
                             {feedback.rating}
@@ -465,6 +502,12 @@ export function FeedbackPageComponent() {
                             ) : (
                               <span>{feedback.comentario || '-'}</span>
                             )}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-4 items-start gap-4">
+                          <span className="font-bold">Análise:</span>
+                          <div className="col-span-3">
+                            <p className="whitespace-pre-wrap break-words">{feedback.analysis}</p>
                           </div>
                         </div>
                       </div>

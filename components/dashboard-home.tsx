@@ -18,7 +18,7 @@ import {
 } from 'chart.js'
 import Link from 'next/link'
 import { ArrowRight, Users, Star, MessageSquare, TrendingUp, Bell, Settings } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback} from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { 
   Select, 
@@ -140,8 +140,7 @@ export function DashboardHomeComponent() {
               <Settings className="h-4 w-4" />
             </Button>
             <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarFallback>U</AvatarFallback>
             </Avatar>
           </div>
         </div>
@@ -311,8 +310,23 @@ export function DashboardHomeComponent() {
             <CardContent>
               <p className="mb-2">Visualize e responda aos feedbacks dos usuários.</p>
               <Link href="/feedback">
-              <Button className="w-full">
+                <Button className="w-full">
                   Ver Feedbacks
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>Feedbacks Voice</CardTitle>
+              <CardDescription>Gerencie e analise feedbacks de voz</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-2">Visualize e responda aos feedbacks de voz dos usuários.</p>
+              <Link href="/feedback-voice">
+                <Button className="w-full">
+                  Ver Feedbacks Voice
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
