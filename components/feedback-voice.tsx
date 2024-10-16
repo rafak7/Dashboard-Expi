@@ -340,7 +340,6 @@ export function FeedbackVoice() {
             </CardContent>
           </Card>
 
-          {/* Feedbacks Recentes */}
           <Card>
             <CardHeader>
               <CardTitle>Feedbacks Recentes</CardTitle>

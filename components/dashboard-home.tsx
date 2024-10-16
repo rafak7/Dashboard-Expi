@@ -146,13 +146,6 @@ export function DashboardHomeComponent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-      {/* Elementos cromados de fundo */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-10 blur-3xl"></div>
-        <div className="absolute top-1/2 -right-20 w-60 h-60 bg-gradient-to-bl from-green-400 to-blue-500 rounded-full opacity-10 blur-3xl"></div>
-        <div className="absolute -bottom-40 left-1/2 w-72 h-72 bg-gradient-to-tr from-yellow-400 to-pink-500 rounded-full opacity-10 blur-3xl"></div>
-      </div>
-
       <div className="container mx-auto p-6 relative z-10">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800">Dashboard</h1>
