@@ -84,6 +84,19 @@ type Feedback = {
   
 }
 
+// Add this function to format JSON to HTML
+const formatJsonToHtml = (text: string) => {
+  try {
+    const jsonObject = JSON.parse(text);
+    return Object.entries(jsonObject)
+      .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
+      .join('<br>');
+  } catch {
+    // If parsing fails, return the original text with line breaks converted to <br>
+    return text.replace(/\n/g, '<br>');
+  }
+};
+
 export function FeedbackPageComponent() {
   const [feedbackData, setFeedbackData] = React.useState<Feedback[]>([])
   const [currentPage, setCurrentPage] = React.useState(1)
@@ -426,7 +439,7 @@ export function FeedbackPageComponent() {
                           <TableCell>{feedback.usuario}</TableCell>
                           <TableCell>
                             {feedback.comentario
-                              ? `${feedback.comentario.substring(0, 50)}...`
+                              ? feedback.comentario.substring(0, 50).replace(/<[^>]*>/g, '') + (feedback.comentario.length > 50 ? '...' : '')
                               : 'Sem comentário'}
                           </TableCell>
                           <TableCell>
@@ -466,7 +479,12 @@ export function FeedbackPageComponent() {
                             <div className="grid grid-cols-4 items-start gap-4">
                               <span className="font-bold">Comentário:</span>
                               <div className="col-span-3">
-                                <p className="whitespace-pre-wrap break-words">{feedback.comentario || '-'}</p>
+                                <p 
+                                  className="whitespace-pre-wrap break-words"
+                                  dangerouslySetInnerHTML={{ 
+                                    __html: formatJsonToHtml(feedback.comentario || 'Sem comentário') 
+                                  }}
+                                />
                               </div>
                             </div>
                           </div>
