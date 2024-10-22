@@ -219,6 +219,39 @@ export function DashboardHomeComponent() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>Feedbacks</CardTitle>
+              <CardDescription>Gerencie e analise feedbacks</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-2">Visualize e responda aos feedbacks dos usuários.</p>
+              <Link href="/feedback">
+                <Button className="w-full">
+                  Ver Feedbacks
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>Feedbacks Voice</CardTitle>
+              <CardDescription>Gerencie e analise feedbacks de voz</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-2">Visualize e responda aos feedbacks de voz dos usuários.</p>
+              <Link href="/feedback-voice">
+                <Button className="w-full">
+                  Ver Feedbacks Voice
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
             <CardHeader className="flex items-center justify-between">
               <CardTitle>Feedbacks Recebidos</CardTitle>
               <Select value={timeRange} onValueChange={setTimeRange}>
@@ -314,69 +347,6 @@ export function DashboardHomeComponent() {
                   },
                 }}
               />
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Feedbacks</CardTitle>
-              <CardDescription>Gerencie e analise feedbacks</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-2">Visualize e responda aos feedbacks dos usuários.</p>
-              <Link href="/feedback">
-                <Button className="w-full">
-                  Ver Feedbacks
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Feedbacks Voice</CardTitle>
-              <CardDescription>Gerencie e analise feedbacks de voz</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-2">Visualize e responda aos feedbacks de voz dos usuários.</p>
-              <Link href="/feedback-voice">
-                <Button className="w-full">
-                  Ver Feedbacks Voice
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Usuários</CardTitle>
-              <CardDescription>Gerencie contas de usuários</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-2">Visualize e gerencie as contas de usuários.</p>
-              <Link href="/users">
-                <Button className="w-full">
-                  Ver Usuários
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-          <Card className="bg-white bg-opacity-80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Relatórios</CardTitle>
-              <CardDescription>Analise métricas detalhadas</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-2">Acesse relatórios detalhados e análises.</p>
-              <Link href="/reports">
-                <Button className="w-full">
-                  Ver Relatórios
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
             </CardContent>
           </Card>
         </div>
